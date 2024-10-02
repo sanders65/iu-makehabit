@@ -43,9 +43,3 @@ Then run:
 ```pytest .```
 
 ***
-
-## Acknowledgement
-For a long time I thought, that I can't implement a project like this, 
-because I really had no clue how to proceed. But thanks to guidance and support – 
-especially from Prof. Dr. Max Pumperla at IU Academy – 
-I finally made it. Yeahs to that!

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import questionary
 from db import Database
 from habit import Habit
@@ -71,10 +73,27 @@ def checkoff_habit_cli():
     habit = Habit(habit_data['name'], habit_data['description'], habit_data['periodicity'])
     habit.checkoff_dates = checkoff_dates
 
+    # Ask if user wants to add a custom date or today's date
+    use_custom_date = questionary.confirm("Do you want to enter a custom checkoff date?").ask()
+
+    if use_custom_date:
+        while True:
+            # Ask user to input a date
+            custom_date_str = questionary.text("Please enter your custom checkoff date, use format YYYY-MM-DD:").ask()
+            try:
+                custom_date = datetime.strptime(custom_date_str, "%Y-%m-%d")
+                break # Exit loop when input is valid
+            except ValueError:
+                print("You entered an invalid date format. Please try again.")
+
+    else:
+        # Use today's date as default
+        custom_date = datetime.now()
+
     # Use checkoff logic from habit.py to ensure habit can just get checked off once
-    if habit.checkoff_habit():
-        db.add_streak_to_table(habit_id, habit.checkoff_dates[-1])
-        print(f"Your habit '{habit_name}' was checked off successfully!")
+    if habit.checkoff_habit(checkoff_date=custom_date): # Here the user input or default value is passed
+        db.add_streak_to_table(habit_id, custom_date)
+        print(f"Your habit '{habit_name}' was checked off successfully on {custom_date}!")
     else:
         print(f"Your habit '{habit_name}' was already checked off in the given periodicity.")
 

@@ -112,8 +112,8 @@ class TestDatabase:
         # set some checkoff dates
         checkoff_dates = [
             datetime(2024, 10, 3),
-            datetime(2024, 10, 4),
-            datetime(2024, 10, 7)
+            datetime(2024, 10, 4, 14, 30), # try with hours and minutes
+            datetime(2024, 10, 7, 8, 45, 30) # try also with seconds
         ]
         for date in checkoff_dates:
             setup_db.add_streak_to_table(habit_id, date)
@@ -133,6 +133,3 @@ class TestDatabase:
         fetched_id = setup_db.get_habit_id("Get your habit by ID")
 
         assert fetched_id == habit_id, "The fetched habit ID does not match the inserted habit ID."
-
-
-

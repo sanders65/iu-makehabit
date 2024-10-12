@@ -42,4 +42,10 @@ To run the tests, pytest needs to be installed.
 Then run: 
 ```pytest .```
 
+Example habit and tracking data can be found in 
+```main.db```.
+
 ***
+## Acknowledgement
+Being a beginner at programming, I thought I can't accomplish a project like this. 
+But: In the end, I finally made it work (at least I think so). Yeahs to that! 

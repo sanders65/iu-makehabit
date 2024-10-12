@@ -3,8 +3,8 @@ from db import Database
 
 
 class Analyse:
-    def __init__(self, db_name='main.db'):
-        self.db = Database(db_name)
+    def __init__(self, db):
+        self.db = db
 
     def get_all_stored_habits(self):
         """Returns a list of all habits with and without checkoff dates"""

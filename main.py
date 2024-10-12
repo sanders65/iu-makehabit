@@ -1,17 +1,57 @@
 from datetime import datetime
-
 import questionary
+import sqlite3
+import os
 from db import Database
 from habit import Habit
 from analyse import Analyse
 
-# Initializing the database and analyse modules
-db = Database()
-analyse = Analyse()
+current_db = "main.db" # Default database, make variable global for the current db
+
+# Function to initialize the Database and Analyse instances
+def initialize_modules():
+    global db, analyse
+    db = Database(db_name=current_db) # Pass current_db to Database instance
+    analyse = Analyse(db) # Pass the db instance to Analyse
+
+def load_sql_script(script_path):
+    """Load SQL script into the specified database."""
+    global current_db, db
+    try:
+        current_db = "example.db" # Set current_db to example.db
+
+        with sqlite3.connect(current_db) as conn:
+            with open(script_path, 'r') as sql_file:
+                sql_script = sql_file.read()
+            conn.executescript(sql_script)
+
+        print(f"Example data was successfully loaded into {current_db}. "
+              "'Make it a Habit' now uses the predefined example data.")
+
+        db = Database(db_name=current_db) # Reinitialize modules to use example.db
+
+    except Exception as e:
+        print(f"Error loading SQL script: {e}")
+
+def prompt_load_example_data():
+    """Ask the user, if they want to load example data or not."""
+    load_example = questionary.confirm("Do you want to load the example data "
+                                       "with predefined habits and checkoff dates?").ask()
+    if load_example:
+        if os.path.exists("example_habit.sql"):
+            load_sql_script("example_habit.sql")
+        else:
+            print("The file 'example_habit.sql' could not be found. "
+                  "Please make sure that the file is in the project directory.")
+    else:
+        print("Okay, we are continuing without loading the example data.")
 
 def main_menu():
     # Start with a welcome message
-    questionary.confirm("Welcome! Are you ready to start?").ask()
+    start = questionary.confirm("Welcome! Are you ready to start?").ask()
+
+    if not start:
+        exit_cli() # Exit the program if user don't want to start
 
     choice = questionary.select(
         "What do you want to do?",
@@ -100,6 +140,7 @@ def checkoff_habit_cli():
     main_menu()
 
 def edit_habit_cli():
+    print(f" Currently used db: {current_db}")
     # Define how habits are edited by the user
     habits = db.get_all_habits()
     if not habits:
@@ -108,9 +149,21 @@ def edit_habit_cli():
         return
 
     habit_names = [habit['name'] for habit in habits]
-    habit_name = questionary.select("Which habit do you want to edit", choices=habit_names).ask()
+    habit_name = questionary.select("Which habit do you want to edit?", choices=habit_names).ask()
 
-    new_name = questionary.text("Please enter the new name for your habit.").ask()
+    # Start a loop to check for already existing habit names to prevent duplicates
+
+    while True:
+        new_name = questionary.text("Please enter the new name for your habit.").ask()
+
+    # But make sure, that the same name can be reused
+        existing_habits = [habit['name'] for habit in habits if habit['name'] != habit_name]
+        if new_name in existing_habits:
+            print(f"The habit '{new_name}' already exists. Please enter another name for your new habit.")
+        else:
+            break # Exit loop if valid name is found
+
+    # If there are no duplicates, proceed with editing the habit
     new_description = questionary.text("Please enter the new description for your habit.").ask()
     habit_id = db.get_habit_id(habit_name)
     db.update_habit_in_table(habit_id, new_name, new_description)
@@ -118,6 +171,7 @@ def edit_habit_cli():
     main_menu()
 
 def analyse_habit_cli():
+    print(f" Currently used db: {current_db}")
     # Define how habits can get analyzed by the user
     choice = questionary.select(
         "What do you want to analyze?",
@@ -223,12 +277,18 @@ def delete_habit_cli():
         print("Sorry, there are no habits to delete.")
         main_menu()
         return
+
     habit_names = [habit['name'] for habit in habits]
     habit_name = questionary.select("Which habit do you want to delete?", choices=habit_names).ask()
 
-    habit_id = db.get_habit_id(habit_name)
-    db.delete_habit_from_table(habit_id)
-    print(f"Your habit '{habit_name}' was deleted successfully!")
+    confirm_delete = questionary.confirm(f"Are you sure you want to delete '{habit_name}'? "
+                                         "Habits once deleted cannot be restored.").ask()
+    if confirm_delete:
+        habit_id = db.get_habit_id(habit_name)
+        db.delete_habit_from_table(habit_id)
+        print(f"Your habit '{habit_name}' was deleted successfully!")
+    else:
+        print(f"Your habit '{habit_name}' was not deleted.")
     main_menu()
 
 def exit_cli():
@@ -237,4 +297,11 @@ def exit_cli():
     exit()
 
 if __name__ == "__main__":
+    # Ask the user whether to load example data or not
+    prompt_load_example_data()
+
+    # Initialize the modules (with the correct current_db)
+    initialize_modules()
+
+    # Proceed to the main menu
     main_menu()

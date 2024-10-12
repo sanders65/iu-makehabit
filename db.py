@@ -78,9 +78,19 @@ class Database:
         return habits
 
     def get_all_checkoff_dates(self, habit_id):
-        """How to get all stored checkoff dates from one habit."""
+        """Retrieve all stored checkoff dates from one habit."""
         cursor = self.conn.execute("SELECT checkoff_date FROM tracking WHERE habit_id = ?", (habit_id,))
-        checkoff_dates = [datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S") for row in cursor.fetchall()]
+
+        checkoff_dates = []
+        for row in cursor.fetchall():
+            date_str = row[0]
+            try: # First try parsing the full date-time format
+                checkoff_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            except ValueError: # If it fails, try parsing just the date part
+                checkoff_date = datetime.strptime(date_str, "%Y-%m-%d")
+
+            checkoff_dates.append(checkoff_date)
+
         return checkoff_dates
 
     def get_habit_id(self, name):

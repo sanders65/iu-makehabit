@@ -4,12 +4,16 @@ from datetime import datetime
 
 class Database:
     def __init__(self, db_name='main.db'):
-        """Initializing a database connection and create tables if they don't exist."""
+        """
+        Initializes a database connection and create tables if they don't exist.
+
+        :param db_name: The name of the database file (default is 'main.db').
+        """
         self.conn = sqlite3.connect(db_name)
         self.create_tables()
 
     def create_tables(self):
-        """Create tables for storing habits and tracking."""
+        """Creates tables for storing habits and tracking information."""
         self.conn.execute("""CREATE TABLE IF NOT EXISTS habits (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT, 
@@ -27,13 +31,22 @@ class Database:
         self.conn.commit()
 
     def check_habit_exists(self, name):
-        """Have a look if a habit with the given name already exists in the habits table."""
+        """
+        Checks if a habit with the given name already exists in the habits table.
+
+        :param name: The name of the habit to check.
+        :return: True if the habit exists, False otherwise.
+        """
         cursor = self.conn.execute("SELECT id FROM habits WHERE LOWER(name) = ?", (name.lower(),))
         result = cursor.fetchone()
         return result is not None
 
     def add_habit_to_table(self, habit):
-        """How to save a habit in the database."""
+        """Saves a habit in the database.
+
+        :param habit: The Habit object to save.
+        :return: The ID of the newly added habit.
+        """
         self.conn.execute("INSERT INTO habits (name, description, periodicity, creation_date) VALUES (?, ?, ?, ?)",
                           (habit.get_name(), habit.get_description(), habit.get_periodicity(),
                           habit.get_creation_date().strftime("%Y-%m-%d %H:%M:%S")))
@@ -42,25 +55,44 @@ class Database:
         return habit_id
 
     def delete_habit_from_table(self, habit_id):
-        """How to delete a habit and its checkoff dates from the tables."""
+        """
+        Deletes a habit and its associated checkoff dates from the tables.
+
+        :param habit_id: The ID of the habit to delete.
+        """
         self.conn.execute("DELETE FROM habits WHERE id = ?", (habit_id,))
         self.conn.execute("DELETE FROM tracking WHERE habit_id = ?", (habit_id,))
         self.conn.commit()
 
     def add_streak_to_table(self, habit_id, checkoff_date):
-        """How to save checkoff dates to the tracking table."""
+        """
+        Saves checkoff dates to the tracking table.
+
+        :param habit_id: The ID of the habit being checked off.
+        :param checkoff_date: The date the habit was checked off.
+        """
         self.conn.execute("INSERT INTO tracking (habit_id, checkoff_date) VALUES (?, ?)",
                           (habit_id, checkoff_date.strftime("%Y-%m-%d %H:%M:%S")))
         self.conn.commit()
 
     def update_habit_in_table(self, habit_id, new_name, new_description):
-        """How to  save updated habit names and/or descriptions in the habits table."""
+        """
+        Saves updated habit names and/or descriptions in the habits table.
+
+        :param habit_id: The ID of the habit to update.
+        :param new_name: The new name for the habit.
+        :param new_description: The new description for the habit.
+        """
         self.conn.execute("UPDATE habits SET name = ?, description = ?"
                           "WHERE id = ?", (new_name, new_description, habit_id))
         self.conn.commit()
 
     def get_all_habits(self):
-        """How to get all stored habits with their checkoff dates."""
+        """
+        Retrieves all stored habits along with their checkoff dates.
+
+         :return: A list of dictionaries containing habit information.
+        """
         habits = []
         cursor = self.conn.execute("SELECT id, name, description, periodicity, creation_date FROM habits")
         habit_data = cursor.fetchall()
@@ -78,7 +110,12 @@ class Database:
         return habits
 
     def get_all_checkoff_dates(self, habit_id):
-        """Retrieve all stored checkoff dates from one habit."""
+        """
+        Retrieves all stored checkoff dates for a specified habit.
+
+        :param habit_id: The ID of the habit for which to retrieve checkoff dates.
+        :return: A list of datetime objects representing the checkoff dates.
+        """
         cursor = self.conn.execute("SELECT checkoff_date FROM tracking WHERE habit_id = ?", (habit_id,))
 
         checkoff_dates = []
@@ -94,7 +131,12 @@ class Database:
         return checkoff_dates
 
     def get_habit_id(self, name):
-        """How to get a stored habit by ID when only name is given."""
+        """
+        Retrieves the ID of a stored habit by name.
+
+        :param name: The name of the habit to search for.
+        :return: The ID of the habit if found, None otherwise.
+        """
         cursor = self.conn.execute("SELECT id FROM habits WHERE LOWER(name) = LOWER(?)", (name,))
         result = cursor.fetchone()
         return result[0] if result else None

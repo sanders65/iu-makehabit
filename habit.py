@@ -2,15 +2,16 @@ from datetime import datetime
 
 
 class Habit:
-    """Creating a class representing the habits."""
+    """A class representing the habits."""
 
     def __init__(self, name: str, description: str, periodicity: str):
-        """Initializing the habits.
+        """
+        Initializing a new Habit instance .
         :param name: The name of the habit.
-        :param description: A little description to the habit.
-        :param periodicity: The frequency of the habit, daily or weekly.
-        :param creation_date: The date and time the habit was created, default to the current date.
-        :param checkoff_dates: List of the dates a habits got 'checked off', i.e. completed.
+        :param description: A brief description of the habit.
+        :param periodicity: The frequency of the habit, either 'daily' or 'weekly'.
+        :param creation_date: The date and time the habit was created (automatically set).
+        :param checkoff_dates: A list of the dates when a habit completed, i.e. 'checked off'.
         """
         self.name = name
         self.description = description
@@ -18,47 +19,61 @@ class Habit:
         self.creation_date = datetime.now()
         self.checkoff_dates = []
 
-    # Access the parameters
+    # Accessor methods
     def get_name(self):
+        """Returns the name of the habit."""
         return self.name
 
     def get_description(self):
+        """Returns the description of the habit."""
         return self.description
 
     def get_periodicity(self):
+        """Returns the periodicity of the habit."""
         return self.periodicity
 
     def get_creation_date(self):
+        """Returns the creation date of the habit."""
         return self.creation_date
 
     def get_checkoff_dates(self):
+        """Returns the list of checkoff dates for the habit."""
         return self.checkoff_dates
 
     def checkoff_habit(self, checkoff_date: datetime = None) -> bool:
-        """Attempt to check off the habit and return True if successful, False otherwise."""
+        """
+        Attempts to check off the habit.
+        :param checkoff_date: The date when the habit is checked off.
+        :return: True if the habit was successfully checked off, False otherwise.
+        """
         if not checkoff_date:
             checkoff_date = datetime.now()
 
         if self.checkoff_dates:
             last_checkoff = self.checkoff_dates[-1]
             if self.periodicity == "daily" and last_checkoff.date() == checkoff_date.date():
-                return False
+                return False # Already checked off today
             elif self.periodicity == "weekly" and last_checkoff.isocalendar()[1] == checkoff_date.isocalendar()[1]:
-                return False
+                return False # Already checked off this week
 
         self.checkoff_dates.append(checkoff_date)
         return True # Habit was checked off successfully
 
     def edit_habit(self, new_name, new_description):
-        """Defining how to edit names and descriptions of habits.
-        :param new_name: The edited habit name.
-        :param new_description: The edited habit description."""
+        """
+        Edit's the habits name and descriptions.
+        :param new_name: The edited new habit name.
+        :param new_description: The edited new habit description.
+        """
         self.name = new_name
         self.description = new_description
 
     def streak(self):
-        """Defining the calculation of the current streak when a habit gets checked off.
-        Returns an int, which is the number of the currently checked off dates."""
+        """
+        Calculates the current streak of checkoff dates.
+
+        :return: The number of the consecutive checkoffs for the habit.
+        """
         if not self.checkoff_dates:
             return 0
 
@@ -89,4 +104,7 @@ class Habit:
 
         return current_streak
 
-# Do I need a def __str__(self): representation here? (return f"{self.name}, ...)
+def __str__(self) -> str:
+    """Returns a string representation of the habit."""
+    return (f"Habit(name={self.name}, description={self.description}, periodicity={self.periodicity}, "
+            f"creation_date={self.creation_date}, checkoff_dates={self.checkoff_dates})")

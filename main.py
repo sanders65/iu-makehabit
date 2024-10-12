@@ -6,19 +6,25 @@ from db import Database
 from habit import Habit
 from analyse import Analyse
 
-current_db = "main.db" # Default database, make variable global for the current db
+# Set the default database to be used
+current_db = "main.db"
 
-# Function to initialize the Database and Analyse instances
 def initialize_modules():
+    """Initialize the Database and Analyse instances with the current database."""
     global db, analyse
     db = Database(db_name=current_db) # Pass current_db to Database instance
     analyse = Analyse(db) # Pass the db instance to Analyse
 
 def load_sql_script(script_path):
-    """Load SQL script into the specified database."""
+    """
+    Load SQL script into the current database and switch to using 'example.db'.
+
+    Args:
+        script_path (str): Path to the SQL script file to be loaded.
+    """
     global current_db, db
     try:
-        current_db = "example.db" # Set current_db to example.db
+        current_db = "example.db" # Switch to example.db for predefined data
 
         with sqlite3.connect(current_db) as conn:
             with open(script_path, 'r') as sql_file:
@@ -28,13 +34,14 @@ def load_sql_script(script_path):
         print(f"Example data was successfully loaded into {current_db}. "
               "'Make it a Habit' now uses the predefined example data.")
 
-        db = Database(db_name=current_db) # Reinitialize modules to use example.db
+        # Reinitialize database with example.db
+        db = Database(db_name=current_db)
 
     except Exception as e:
         print(f"Error loading SQL script: {e}")
 
 def prompt_load_example_data():
-    """Ask the user, if they want to load example data or not."""
+    """Prompt the user to confirm whether to load predefined example data."""
     load_example = questionary.confirm("Do you want to load the example data "
                                        "with predefined habits and checkoff dates?").ask()
     if load_example:
@@ -47,18 +54,18 @@ def prompt_load_example_data():
         print("Okay, we are continuing without loading the example data.")
 
 def main_menu():
-    # Start with a welcome message
+    """Display the main menu and route the user to different actions based on their selection."""
     start = questionary.confirm("Welcome! Are you ready to start?").ask()
 
     if not start:
-        exit_cli() # Exit the program if user don't want to start
+        exit_cli() # Exit the program if user don't want to start.
 
     choice = questionary.select(
         "What do you want to do?",
         choices = ["Add habit", "Check off habit", "Edit habit", "Analyse habits", "Delete habit", "Exit"]
     ).ask()
 
-    # Split choices into separated functions to keep better track
+    # Split choices into separated functions to keep better track.
     if choice == "Add habit":
         add_habit_cli()
     elif choice == "Check off habit":
@@ -73,10 +80,10 @@ def main_menu():
         exit_cli()
 
 def add_habit_cli():
-    # Define how habits are added by the user
+    """Add a new habit based on user input."""
     name = questionary.text("Please enter the name of your habit.").ask()
 
-    # Check for already existing habit names to prevent duplicates
+    # Check for already existing habit names to prevent duplicates.
     existing_habits = [habit['name'] for habit in db.get_all_habits()]
     if name in existing_habits:
         print(f"The habit '{name}' already exists. Please enter another name for your new habit.")
@@ -94,7 +101,7 @@ def add_habit_cli():
     main_menu()
 
 def checkoff_habit_cli():
-    # Define how habits are checked off by the user
+    """Check off a habit for today or a custom date."""
     habits = db.get_all_habits()
     if not habits: # Check if there are habits, if not go back to main menu
         print("Sorry, there are no habits to check off.")
@@ -104,21 +111,21 @@ def checkoff_habit_cli():
     habit_names = [habit['name'] for habit in habits]
     habit_name = questionary.select("Which habit do you want to check off?", choices=habit_names).ask()
 
-    # Look for habit details
+    # Look for habit details.
     habit_data = next(h for h in habits if h['name'] == habit_name)
     habit_id = db.get_habit_id(habit_name)
 
-    # Look for checkoff dates in the database and create object
+    # Look for checkoff dates in the database and create object.
     checkoff_dates = db.get_all_checkoff_dates(habit_id)
     habit = Habit(habit_data['name'], habit_data['description'], habit_data['periodicity'])
     habit.checkoff_dates = checkoff_dates
 
-    # Ask if user wants to add a custom date or today's date
+    # Ask if the user wants to add a custom date or today's date.
     use_custom_date = questionary.confirm("Do you want to enter a custom checkoff date?").ask()
 
     if use_custom_date:
         while True:
-            # Ask user to input a date
+            # Ask user to input a date.
             custom_date_str = questionary.text("Please enter your custom checkoff date, use format YYYY-MM-DD:").ask()
             try:
                 custom_date = datetime.strptime(custom_date_str, "%Y-%m-%d")
@@ -127,11 +134,11 @@ def checkoff_habit_cli():
                 print("You entered an invalid date format. Please try again.")
 
     else:
-        # Use today's date as default
+        # Use today's date as default.
         custom_date = datetime.now()
 
-    # Use checkoff logic from habit.py to ensure habit can just get checked off once
-    if habit.checkoff_habit(checkoff_date=custom_date): # Here the user input or default value is passed
+    # Use checkoff logic from habit.py to ensure habit can just get checked off once.
+    if habit.checkoff_habit(checkoff_date=custom_date):
         db.add_streak_to_table(habit_id, custom_date)
         print(f"Your habit '{habit_name}' was checked off successfully on {custom_date}!")
     else:
@@ -140,8 +147,7 @@ def checkoff_habit_cli():
     main_menu()
 
 def edit_habit_cli():
-    print(f" Currently used db: {current_db}")
-    # Define how habits are edited by the user
+    """Edit an existing habit's name and description."""
     habits = db.get_all_habits()
     if not habits:
         print("Sorry, there are no habits to edit.")
@@ -151,19 +157,17 @@ def edit_habit_cli():
     habit_names = [habit['name'] for habit in habits]
     habit_name = questionary.select("Which habit do you want to edit?", choices=habit_names).ask()
 
-    # Start a loop to check for already existing habit names to prevent duplicates
-
+    # Start a loop to check for already existing habit names to prevent duplicates.
     while True:
         new_name = questionary.text("Please enter the new name for your habit.").ask()
-
-    # But make sure, that the same name can be reused
+    # Make sure that the same name can be reused.
         existing_habits = [habit['name'] for habit in habits if habit['name'] != habit_name]
         if new_name in existing_habits:
             print(f"The habit '{new_name}' already exists. Please enter another name for your new habit.")
         else:
-            break # Exit loop if valid name is found
+            break # Exit loop if valid name is found.
 
-    # If there are no duplicates, proceed with editing the habit
+    # If there are no duplicates, proceed with editing the habit.
     new_description = questionary.text("Please enter the new description for your habit.").ask()
     habit_id = db.get_habit_id(habit_name)
     db.update_habit_in_table(habit_id, new_name, new_description)
@@ -171,8 +175,7 @@ def edit_habit_cli():
     main_menu()
 
 def analyse_habit_cli():
-    print(f" Currently used db: {current_db}")
-    # Define how habits can get analyzed by the user
+    """Provide analysis options for the user to view their habits' data."""
     choice = questionary.select(
         "What do you want to analyze?",
         choices=["Show all habits",
@@ -186,7 +189,7 @@ def analyse_habit_cli():
         ).ask()
 
     if choice == "Show all habits":
-        # Gets all stored habits (daily and weekly) with or without checkoff dates, sorted by id
+        # Retrieve all stored habits (daily and weekly) with or without checkoff dates, sorted by ID.
         all_habits = analyse.get_all_stored_habits()
         if all_habits:
             print("These are all your currently tracked habits:", ", ".join(all_habits))
@@ -195,7 +198,7 @@ def analyse_habit_cli():
         main_menu()
 
     elif choice == "Show all at least once checked off habits":
-        # Gets all stored habits (daily and weekly) with at least one checkoff dates, sorted by id
+        # Retrieve all stored habits (daily AND weekly) with at least one checkoff date, sorted by ID.
         tracked_habits = analyse.get_all_checked_off_habits()
         if tracked_habits:
             print("These are your currently tracked habits "
@@ -205,12 +208,11 @@ def analyse_habit_cli():
         main_menu()
 
     elif choice == "Show all habits by periodicity":
+        # Retrieve all stored habits with or without checkoff dates, filtered by periodicity (i.e. daily OR weekly).
         periodicity = questionary.select("Please choose a periodicity to filter by.",
                                         choices=["daily", "weekly"]).ask()
         with_checkoff, without_checkoff = analyse.get_habits_by_periodicity(periodicity)
 
-        # Gets all stored habits (daily OR weekly) with and without checkoff dates
-        # Results are presented in two print statements, habits sorted by id
         print(f"Your {periodicity} habits with checkoff dates are:",
               ", ".join(with_checkoff) if with_checkoff else "None")
         print(f"Your {periodicity} habits without checkoff dates are:",
@@ -218,11 +220,11 @@ def analyse_habit_cli():
         main_menu()
 
     elif choice == "Show all at least once checked off habits by periodicity":
+        # Retrieve all stored habits with at least one checkoff date, filtered by periodicity (i.e. daily OR weekly).
         periodicity = questionary.select("Please choose a periodicity to filter by.",
                                         choices=["daily", "weekly"]).ask()
         with_checkoff, _ = analyse.get_habits_by_periodicity(periodicity)
 
-        # Gets all stored habits (daily OR weekly) with at least one checkoff date, sorted by id
         if with_checkoff:
             print(f"Your {periodicity} habits with at least one checkoff date are:",
                 ", ".join(with_checkoff))
@@ -231,7 +233,7 @@ def analyse_habit_cli():
         main_menu()
 
     elif choice == "Show longest streak for daily habits":
-        # Gets the daily habits with the longest streak
+        # Retrieve the daily habit(s) with the longest streak.
         habit_name, streak = analyse.get_longest_streak_daily()
         if habit_name:
             habit_list = ", ".join(habit_name)
@@ -241,7 +243,7 @@ def analyse_habit_cli():
         main_menu()
 
     elif choice == "Show longest streak for weekly habits":
-        # Gets the weekly habits with the longest streak
+        # Retrieve the weekly habit(s) with the longest streak.
         habit_name, streak = analyse.get_longest_streak_weekly()
         if habit_name:
             habit_list = ", ".join(habit_name)
@@ -251,7 +253,7 @@ def analyse_habit_cli():
         main_menu()
 
     elif choice == "Show longest streak for a specific habit":
-        # Gets the longest streak of a given habit
+        # Retrieve the longest streak of a given habit.
         habits = db.get_all_habits()
         if not habits:
             print("Sorry, there are no habits to analyze.")
@@ -271,7 +273,7 @@ def analyse_habit_cli():
         main_menu()
 
 def delete_habit_cli():
-    # Define how habits can be deleted by the user
+    """Delete a habit from the database based on user selection."""
     habits = db.get_all_habits()
     if not habits:
         print("Sorry, there are no habits to delete.")
@@ -292,7 +294,7 @@ def delete_habit_cli():
     main_menu()
 
 def exit_cli():
-    # Exits the CLI
+    """Exit the application."""
     print("See you next time!")
     exit()
 

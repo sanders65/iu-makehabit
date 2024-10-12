@@ -1,51 +1,75 @@
 # Make it a Habit
 
-An **easy-to-use** app to track your daily and weekly tasks 
-to help you to **establish good habits** in your life.
+**An easy-to-use app designed to help you track 
+your daily and weekly tasks, empowering you
+to establish and maintain good habits in your life.**
 
-I created this portfolio project in the course 
-*"Object Oriented and Functional Programming"* at IU Academy.
+I created this portfolio project as part of the 
+*"Object Oriented and Functional Programming"* course at IU Academy.
 
 ***
 ## What is it?
 
-With „Make it a Habit“ you can track habits whose regularity you want to improve. 
-It works in an easy-to-use and simply to manage interface. 
+With „Make it a Habit“ you can effectively track habits 
+that you want to improve upon regularly. 
+It works in an easy-to-use and simply-to-manage interface. 
 
-- **Multiple individual habits** can be created. Each gets a periodicity: daily or weekly. 
-- A created habit needs to get **„checked-off“** when it is done. 
-A habit that gets checked-off in the defined periodicity will **„raise the streak“** 
-and shows that you are doing good in establishing the habits in your life.
-A habit that not gets checked-off in the defined periodicity will **„break the streak“**. 
-Then you need to start again to raise your streak by checking off your habits in time. 
-- Habits are **analyzable**. So you can have a look of your improvement at any time. 
-For example, you can view all your habits or your longest streak. 
-- Of course, you can also **delete** habits if you don’t want to use it anymore.
+### Key Features:
+- **Create multiple habits:** Each habit can be
+assigned a periodicity: daily or weekly. 
+- **Check off habits:** When you complete a habit, check it off. 
+Completing a habit within its defined periodicity will "raise  
+your streak", reflecting your success in building positive habits.
+- **Track your progress:**  If a habit isn't checked off within its
+periodicity, you **„break the streak“**, your streak will reset.
+- ** Analyze your habits:**: Gain insights into your progress 
+by viewing e.g. all your habits or your longest streak. 
+- **Delete habits:**: Easily remove habits you no longer wish to track.
 
 ***
 ## Installation
-To run the app you need to install all requirements:
+To run the app, first install all required dependencies:
 
 ```pip install -r requirements.txt```
 
 ***
 ## Usage 
-After you downloaded all necessary files and have installed all requirements, 
-you can start the programm. 
-Enter
+Once you have downloaded all necessary files and 
+installed the requirements, start the program with the
+following command in your terminal:
 ```python main.py```
-in your terminal and follow instructions on screen.
+
+Upon starting, you'll be asked whether you want to load example habit data. 
+Choose **"n"** for "No" to enter your own habits. 
+You can the add, check off, edit or analyze your habits. 
+When you're finished, exit the program by selecting "Exit" in the main menu.
+
+If you prefer to explore predefined data, select **"y"** for "Yes". 
+For more details on this testing routine, see "Tests" section below.
 
 ***
 ## Tests
-To run the tests, pytest needs to be installed.
-Then run: 
+To run the tests, ensure you have pytest installed, 
+then execute:
 ```pytest .```
 
-Example habit and tracking data can be found in 
-```main.db```.
+**Predefined example habits and tracking data** are available in the CLI. 
+Start the program using ```python main.py```  
+When prompted, select **"y"** for "Yes" to load the example data and continue 
+using the app with the predefined habits.
+
+**Important Note:**
+After loading the example habits and tracking data, 
+if you exit the program, you must delete the example.db 
+file from your directory before restarting the program 
+to load the example data again. If you do not delete this 
+file, the program will insert the example data into 
+example.db again, leading to duplicate entries, 
+which we want to avoid.
 
 ***
-## Acknowledgement
-Being a beginner at programming, I thought I can't accomplish a project like this. 
-But: In the end, I finally made it work (at least I think so). Yeahs to that! 
+## Acknowledgment
+As a beginner in programming, I initially doubted my ability 
+to complete a project of this scale.  
+However, in the end I finally made it work (at least I think so). 
+Cheers to that! 

@@ -22,7 +22,7 @@ Completing a habit within its defined periodicity will "raise
 your streak", reflecting your success in building positive habits.
 - **Track your progress:**  If a habit isn't checked off within its
 periodicity, you **„break the streak“**, your streak will reset.
-- ** Analyze your habits:**: Gain insights into your progress 
+- **Analyze your habits:**: Gain insights into your progress 
 by viewing e.g. all your habits or your longest streak. 
 - **Delete habits:**: Easily remove habits you no longer wish to track.
 
@@ -41,7 +41,7 @@ following command in your terminal:
 
 Upon starting, you'll be asked whether you want to load example habit data. 
 Choose **"n"** for "No" to enter your own habits. 
-You can the add, check off, edit or analyze your habits. 
+You can then add, check off, edit or analyze your habits. 
 When you're finished, exit the program by selecting "Exit" in the main menu.
 
 If you prefer to explore predefined data, select **"y"** for "Yes". 

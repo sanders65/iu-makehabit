@@ -1,3 +1,3 @@
-pytest
-questionary
-datetime
+# Required packages for "Make it a Habit"
+pytest # Testing the framework
+questionary # Command line interface
